@@ -1,4 +1,4 @@
-const CACHE_NAME = 'regalo-papa-v1';
+const CACHE_NAME = 'regalo-papi-v1.1';
 
 // L'elenco di tutti i file statici che l'app deve salvare per funzionare offline
 const ASSETS_TO_CACHE = [
