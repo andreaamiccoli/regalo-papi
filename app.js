@@ -5,7 +5,7 @@
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
   const BRUSH_RADIUS = 22;      // raggio del "gratta" in pixel CSS
-  const REVEAL_THRESHOLD = 55;  // % di area grattata oltre la quale si rivela tutto
+  const REVEAL_THRESHOLD = 80;  // % di area grattata oltre la quale si rivela tutto
 
   let isScratching = false;
   let lastX = 0;
@@ -83,7 +83,7 @@
   }
 
   function drawInviteText(width, height) {
-    const text = "✨ GRATTA QUI IL TUO REGALO! ✨";
+    const text = "GRATTA E VINCI IL TUO REGALO!";
     const maxTextWidth = width * 0.86; // margine di sicurezza sui lati
 
     ctx.textAlign = "center";
