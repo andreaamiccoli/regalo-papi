@@ -26,36 +26,72 @@
 </head>
 <body>
 
-  <main class="card-container">
+  <div class="flip-scene">
+    <div class="flip-card" id="flip-card">
 
-    <!-- LIVELLO INFERIORE: il regalo vero e proprio -->
-    <section class="prize-layer" id="prize-layer" aria-hidden="true">
+      <!-- FACCIA ANTERIORE: gratta e vinci + regalo -->
+      <div class="flip-face flip-face--front">
+        <main class="card-container">
 
-      <h1 class="greeting">Buon Compleanno Papi</h1>
+          <!-- LIVELLO INFERIORE: il regalo vero e proprio -->
+          <section class="prize-layer" id="prize-layer" aria-hidden="true">
 
-      <img
-        class="poster"
-        src="./assets/poster.jpg"
-        alt="Locandina del film The Odyssey"
-        draggable="false"
-      >
+            <h1 class="greeting">Buon Compleanno Papi</h1>
 
-      <div class="details">
-        <h2 class="details__title">The Odyssey</h2>
-        <hr class="divider">
-        <p><strong>Fila:</strong> L</p>
-        <p><strong>Posti:</strong> 17 - 18</p>
-        <p><strong>Sala:</strong> 1</p>
-        <p><strong>Data:</strong> 22.07.2026</p>
-        <span class="tickets-badge">2 Biglietti</span>
+            <img
+              class="poster"
+              src="./assets/poster.jpg"
+              alt="Locandina del film The Odyssey"
+              draggable="false"
+            >
+
+            <div class="details">
+              <h2 class="details__title">The Odyssey</h2>
+              <hr class="divider">
+              <p><strong>Fila:</strong> L</p>
+              <p><strong>Posti:</strong> 17 - 18</p>
+              <p><strong>Sala:</strong> 1</p>
+              <p><strong>Data:</strong> 22.07.2026</p>
+              <span class="tickets-badge">2 Biglietti</span>
+            </div>
+
+            <!-- Comparso dopo la rivelazione: invito a scuotere / bottone di fallback -->
+            <button type="button" class="shake-hint" id="shake-hint" hidden>
+              Scuoti il telefono per i biglietti
+              <span class="shake-hint__sub">(o tocca qui)</span>
+            </button>
+
+          </section>
+
+          <!-- LIVELLO SUPERIORE: la patina "Gratta e Vinci" -->
+          <canvas id="scratch-canvas" aria-label="Gratta lo schermo con il dito o il mouse per scoprire il regalo"></canvas>
+
+        </main>
       </div>
 
-    </section>
+      <!-- FACCIA POSTERIORE: i due QR code dei biglietti -->
+      <div class="flip-face flip-face--back">
+        <div class="qr-layer">
+          <h2 class="qr-layer__title">I tuoi biglietti</h2>
 
-    <!-- LIVELLO SUPERIORE: la patina "Gratta e Vinci" -->
-    <canvas id="scratch-canvas" aria-label="Gratta lo schermo con il dito o il mouse per scoprire il regalo"></canvas>
+          <div class="qr-card">
+            <img class="qr-card__image" src="./assets/qr-1.png" alt="QR code biglietto 1 - Posto 17">
+            <span class="qr-card__label">Posto 17</span>
+          </div>
 
-  </main>
+          <div class="qr-card">
+            <img class="qr-card__image" src="./assets/qr-2.png" alt="QR code biglietto 2 - Posto 18">
+            <span class="qr-card__label">Posto 18</span>
+          </div>
+
+          <button type="button" class="back-hint" id="back-hint">
+            ↩︎ Scuoti (o tocca) per tornare indietro
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <script src="./app.js" defer></script>
 </body>

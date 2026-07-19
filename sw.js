@@ -1,7 +1,7 @@
 "use strict";
 
 // Incrementa questo valore ad ogni modifica dei file per invalidare la vecchia cache
-const CACHE_NAME = 'regalo-papi-v1.4';
+const CACHE_NAME = 'regalo-papi-v1.5';
 
 // Percorsi RIGOROSAMENTE relativi (./) per funzionare in una sottocartella
 // del tipo username.github.io/repo/
@@ -14,6 +14,8 @@ const ASSETS_TO_CACHE = [
   "./assets/poster.jpg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
+  "./assets/qr-1.png",
+  "./assets/qr-2.png",
 ];
 
 /* -----------------------------------------------------------

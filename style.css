@@ -40,6 +40,135 @@ body {
 }
 
 /* =========================================================
+   SCENA DI FLIP (contenitore con prospettiva 3D)
+   ========================================================= */
+.flip-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1400px;
+}
+
+.flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Applicata via JS quando si scuote il telefono (o si tocca il fallback) */
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-face--back {
+  transform: rotateY(180deg);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   FACCIA POSTERIORE — QR CODE DEI BIGLIETTI
+   (sfondo bianco: i QR forniti sono neri su bianco)
+   ========================================================= */
+.qr-layer {
+  width: 100%;
+  height: 100%;
+  padding: calc(24px + env(safe-area-inset-top)) 20px
+    calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  color: #1a1a1a;
+}
+
+.qr-layer__title {
+  font-size: clamp(1.2rem, 5vw, 1.8rem);
+  font-weight: 800;
+  color: #0d1224;
+}
+
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-card__image {
+  width: min(60vw, 260px);
+  height: min(60vw, 260px);
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.qr-card__label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+  letter-spacing: 0.3px;
+}
+
+.back-hint {
+  margin-top: 6px;
+  border: none;
+  background: rgba(13, 18, 36, 0.06);
+  color: #333;
+  font-size: 0.85rem;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: inherit;
+}
+
+/* =========================================================
+   INVITO A SCUOTERE (mostrato dopo la rivelazione del gratta e vinci)
+   ========================================================= */
+.shake-hint {
+  border: none;
+  font-family: inherit;
+  background: rgba(240, 193, 75, 0.15);
+  border: 1px solid rgba(240, 193, 75, 0.45);
+  color: #f0c14b;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  animation: shake-hint-pulse 1.8s ease-in-out infinite;
+}
+
+.shake-hint__sub {
+  font-weight: 500;
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+@keyframes shake-hint-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* =========================================================
    LIVELLO INFERIORE — IL REGALO
    ========================================================= */
 .prize-layer {
