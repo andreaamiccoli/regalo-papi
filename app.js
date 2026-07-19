@@ -23,14 +23,33 @@
   let isFlipped = false;
 
   /* ---------------------------------------------------------
+     DIMENSIONI REALI DELLA VIEWPORT
+     window.innerWidth/innerHeight non sempre corrispondono all'area
+     davvero visibile su mobile (es. quando la barra indirizzi di
+     Safari si mostra/nasconde). window.visualViewport, dove
+     disponibile, riflette lo spazio effettivamente visibile.
+  --------------------------------------------------------- */
+  function getViewportSize() {
+    if (window.visualViewport) {
+      return {
+        width: window.visualViewport.width,
+        height: window.visualViewport.height,
+      };
+    }
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+  }
+
+  /* ---------------------------------------------------------
      INIZIALIZZAZIONE / RESIZE DEL CANVAS
      Il canvas si adatta dinamicamente alla risoluzione reale
      del dispositivo (devicePixelRatio) per restare nitido.
   --------------------------------------------------------- */
   function setupCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const { width, height } = getViewportSize();
 
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -287,6 +306,13 @@
   // --- Resize / cambio orientamento ---
   window.addEventListener("resize", debounce(setupCanvas, 200));
   window.addEventListener("orientationchange", debounce(setupCanvas, 200));
+
+  // --- Barra indirizzi mobile che si mostra/nasconde (Safari iOS e simili):
+  //     cambia le dimensioni della visual viewport senza sempre generare
+  //     un evento "resize" sulla window in modo affidabile. ---
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", debounce(setupCanvas, 200));
+  }
 
   // --- Pulsanti di fallback (tocco) per chi non ha/non concede i sensori di movimento ---
   if (shakeHint) {
