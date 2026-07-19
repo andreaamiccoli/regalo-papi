@@ -5,7 +5,7 @@
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
   const BRUSH_RADIUS = 22;      // raggio del "gratta" in pixel CSS
-  const REVEAL_THRESHOLD = 80;  // % di area grattata oltre la quale si rivela tutto
+  const REVEAL_THRESHOLD = 90;  // % di area grattata oltre la quale si rivela tutto
 
   let isScratching = false;
   let lastX = 0;
