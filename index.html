@@ -2,29 +2,61 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Un'Odissea Speciale</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Un biglietto d'auguri digitale interattivo: gratta e scopri il tuo regalo!">
+
+  <!-- Colori tema (barra di stato / splash screen) -->
+  <meta name="theme-color" content="#0d1224">
+
+  <!-- Supporto PWA per iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Regalo Papà">
+
+  <!-- Supporto PWA per Android / Chrome -->
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>Buon Compleanno Papi</title>
+
+  <!-- Percorsi relativi: fondamentale per il funzionamento su GitHub Pages (username.github.io/repo/) -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-  <div class="card-container">
-    <!-- Sotto: Il regalo reale -->
-    <div class="prize-layer">
-      <h2>Buon Compleanno Papi</h2>
-      <!-- <p>Andiamo a gustarci il nuovo capolavoro di Nolan</p><br> -->
-      <img src="assets/poster.jpg" alt="The Odyssey Ticket" class="ticket-img">
+  <main class="card-container">
+
+    <!-- LIVELLO INFERIORE: il regalo vero e proprio -->
+    <section class="prize-layer" id="prize-layer" aria-hidden="true">
+
+      <h1 class="greeting">Buon Compleanno Papi</h1>
+
+      <img
+        class="poster"
+        src="./assets/poster.jpg"
+        alt="Locandina del film The Odyssey"
+        draggable="false"
+      >
+
       <div class="details">
-        <p><strong>Film:</strong> The Odyssey</p>
-        <p><strong>Posti:</strong> Fila L, Sedili 17-18</p>
+        <h2 class="details__title">The Odyssey</h2>
+        <hr class="divider">
+        <p><strong>Fila:</strong> L</p>
+        <p><strong>Posti:</strong> 17 - 18</p>
+        <p><strong>Sala:</strong> 1</p>
+        <p><strong>Data:</strong> 22.07.2026</p>
+        <span class="tickets-badge">2 Biglietti</span>
       </div>
-    </div>
 
-    <!-- Sopra: La patina da grattare -->
-    <canvas id="scratch-canvas"></canvas>
-  </div>
+    </section>
 
-  <script src="app.js"></script>
+    <!-- LIVELLO SUPERIORE: la patina "Gratta e Vinci" -->
+    <canvas id="scratch-canvas" aria-label="Gratta lo schermo con il dito o il mouse per scoprire il regalo"></canvas>
+
+  </main>
+
+  <script src="./app.js" defer></script>
 </body>
 </html>

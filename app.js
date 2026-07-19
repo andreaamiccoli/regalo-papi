@@ -1,143 +1,288 @@
-const canvas = document.getElementById('scratch-canvas');
-const ctx = canvas.getContext('2d');
-let isDrawing = false;
+(function () {
+  "use strict";
 
-// Adatta il canvas alle dimensioni reali del contenitore
-function initCanvas() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  
-  // Creiamo una patina dorata/metallica epica
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, '#d4af37'); // Oro
-  gradient.addColorStop(0.5, '#aa7c11');
-  gradient.addColorStop(1, '#d4af37');
-  
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Testo d'invito sopra la patina
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('GRATTA QUI IL TUO REGALO', canvas.width / 2, canvas.height / 2);
-}
+  const canvas = document.getElementById("scratch-canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-window.addEventListener('load', initCanvas);
+  const BRUSH_RADIUS = 22;      // raggio del "gratta" in pixel CSS
+  const REVEAL_THRESHOLD = 55;  // % di area grattata oltre la quale si rivela tutto
 
-// Funzione core per cancellare i pixel (grattare)
-function scratch(x, y) {
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.beginPath();
-  ctx.arc(x, y, 30, 0, Math. PI * 2); // Raggio del "tocco" per grattare
-  ctx.fill();
-}
+  let isScratching = false;
+  let lastX = 0;
+  let lastY = 0;
+  let moveCount = 0;
+  let hasRevealed = false;
 
-// Eventi Mouse (Desktop)const canvas = document.getElementById('scratch-canvas');
-const ctx = canvas.getContext('2d');
-let isDrawing = false;
+  /* ---------------------------------------------------------
+     INIZIALIZZAZIONE / RESIZE DEL CANVAS
+     Il canvas si adatta dinamicamente alla risoluzione reale
+     del dispositivo (devicePixelRatio) per restare nitido.
+  --------------------------------------------------------- */
+  function setupCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-function initCanvas() {
-  // Imposta le dimensioni reali del canvas pari a quelle dello schermo intero
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  
-  // Sfondo metallico/dorato epico
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, '#d4af37'); 
-  gradient.addColorStop(0.5, '#aa7c11');
-  gradient.addColorStop(1, '#d4af37');
-  
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Calcola la grandezza del font in modo dinamico rispetto allo schermo
-  const fontSize = Math.min(24, canvas.width * 0.06);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `bold ${fontSize}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Ombra sotto il testo del canvas per leggibilità
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = 4;
-  
-  ctx.fillText('👋 PAPÀ, GRATTA QUI IL REGALO!', canvas.width / 2, canvas.height / 2);
-  
-  // Resetta l'ombra per non influenzare il meccanismo di grattata
-  ctx.shadowBlur = 0;
-}
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
-// Inizializza al caricamento della pagina
-window.addEventListener('load', initCanvas);
+    // Reset della trasformazione ad ogni resize, per evitare che lo scaling
+    // si accumuli chiamando ctx.scale() più volte.
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-// Gestione del ridimensionamento (es. rotazione dello schermo)
-window.addEventListener('resize', () => {
-  // Esegui il resize solo se l'utente non ha ancora iniziato a grattare
-  if (ctx.globalCompositeOperation !== 'destination-out') {
-    initCanvas();
+    hasRevealed = false;
+    moveCount = 0;
+    canvas.classList.remove("is-revealed");
+    canvas.style.pointerEvents = "auto";
+
+    drawGoldLayer(width, height);
   }
-});
 
-function scratch(x, y) {
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.beginPath();
-  ctx.arc(x, y, 35, 0, Math.PI * 2); // Raggio di grattata aumentato leggermente per schermi grandi
-  ctx.fill();
-}
+  /* ---------------------------------------------------------
+     DISEGNO DELLA PATINA D'ORO EPICA + TESTO D'INVITO
+  --------------------------------------------------------- */
+  function drawGoldLayer(width, height) {
+    ctx.globalCompositeOperation = "source-over";
 
-// Eventi Mouse (Desktop)
-canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e.offsetX, e.offsetY); });
-canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratch(e.offsetX, e.offsetY); });
-window.addEventListener('mouseup', () => isDrawing = false);
+    // Gradiente metallico dorato (diagonale, effetto "riflesso")
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#8a6d1d");
+    gradient.addColorStop(0.15, "#d4af37");
+    gradient.addColorStop(0.35, "#fdf3c7");
+    gradient.addColorStop(0.5, "#f0c14b");
+    gradient.addColorStop(0.65, "#fdf3c7");
+    gradient.addColorStop(0.85, "#d4af37");
+    gradient.addColorStop(1, "#8a6d1d");
 
-// Eventi Touch (Mobile)
-canvas.addEventListener('touchstart', (e) => {
-  isDrawing = true;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  scratch(touch.clientX - rect.left, touch.clientY - rect.top);
-});
-canvas.addEventListener('touchmove', (e) => {
-  if (!isDrawing) return;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  scratch(touch.clientX - rect.left, touch.clientY - rect.top);
-});
-window.addEventListener('touchend', () => isDrawing = false);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
 
-// Registrazione del Service Worker per la PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('PWA: Service Worker Attivo'))
-      .catch(err => console.error('PWA: Errore SW', err));
-  });
-}
-canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e.offsetX, e.offsetY); });
-canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratch(e.offsetX, e.offsetY); });
-window.addEventListener('mouseup', () => isDrawing = false);
+    // Sottili righe diagonali per simulare una texture metallica spazzolata
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 2;
+    for (let x = -height; x < width; x += 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + height, height);
+      ctx.stroke();
+    }
 
-// Eventi Touch (Mobile)
-canvas.addEventListener('touchstart', (e) => {
-  isDrawing = true;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  scratch(touch.clientX - rect.left, touch.clientY - rect.top);
-});
-canvas.addEventListener('touchmove', (e) => {
-  if (!isDrawing) return;
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  scratch(touch.clientX - rect.left, touch.clientY - rect.top);
-});
-window.addEventListener('touchend', () => isDrawing = false);
+    // Leggera vignettatura per profondità
+    const vignette = ctx.createRadialGradient(
+      width / 2, height / 2, Math.min(width, height) * 0.2,
+      width / 2, height / 2, Math.max(width, height) * 0.75
+    );
+    vignette.addColorStop(0, "rgba(0,0,0,0)");
+    vignette.addColorStop(1, "rgba(0,0,0,0.22)");
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
 
-// Registrazione del Service Worker per la PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('SW registrato!', reg))
-      .catch(err => console.err('Errore SW', err));
-  });
-}
+    drawInviteText(width, height);
+  }
+
+  function drawInviteText(width, height) {
+    const text = "✨ GRATTA QUI IL TUO REGALO! ✨";
+    const maxTextWidth = width * 0.86; // margine di sicurezza sui lati
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // Il font parte proporzionale alla larghezza schermo, poi si riduce
+    // finché il testo non entra in una singola riga: non va mai a capo.
+    let fontSize = Math.round(width * 0.065);
+    fontSize = Math.max(16, Math.min(fontSize, 46));
+
+    const buildFont = (size) =>
+      `bold ${size}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+    ctx.font = buildFont(fontSize);
+    while (ctx.measureText(text).width > maxTextWidth && fontSize > 10) {
+      fontSize -= 1;
+      ctx.font = buildFont(fontSize);
+    }
+
+    // Ombra per leggibilità sopra il gradiente dorato
+    ctx.fillStyle = "rgba(70, 48, 8, 0.55)";
+    ctx.fillText(text, width / 2 + 2, height / 2 + 2);
+
+    ctx.fillStyle = "rgba(55, 38, 6, 0.95)";
+    ctx.fillText(text, width / 2, height / 2);
+  }
+
+  /* ---------------------------------------------------------
+     CALCOLO COORDINATE (MOUSE + TOUCH)
+  --------------------------------------------------------- */
+  function getPointerPosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX;
+    let clientY;
+
+    if (event.touches && event.touches.length > 0) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else if (event.changedTouches && event.changedTouches.length > 0) {
+      clientX = event.changedTouches[0].clientX;
+      clientY = event.changedTouches[0].clientY;
+    } else {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    }
+
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
+  /* ---------------------------------------------------------
+     EFFETTO "GRATTA E VINCI"
+     destination-out rende trasparenti i pixel disegnati,
+     rivelando il livello sottostante (.prize-layer).
+  --------------------------------------------------------- */
+  function scratchAt(x, y) {
+    ctx.globalCompositeOperation = "destination-out";
+    // Alpha piena obbligatoria: il fillStyle potrebbe aver ereditato un
+    // colore semi-trasparente dal testo disegnato in precedenza. Con
+    // "destination-out" l'alpha del fillStyle determina QUANTO viene
+    // cancellato: se non è 1 il pixel non torna mai del tutto trasparente.
+    ctx.fillStyle = "rgba(0, 0, 0, 1)";
+    ctx.beginPath();
+    ctx.arc(x, y, BRUSH_RADIUS, 0, Math.PI * 2, false);
+    ctx.fill();
+  }
+
+  // Interpola tanti cerchi lungo il segmento per non lasciare "buchi"
+  // quando il dito/mouse si muove velocemente.
+  function scratchLine(x0, y0, x1, y1) {
+    const distance = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.floor(distance / (BRUSH_RADIUS / 2)));
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      scratchAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+    }
+  }
+
+  /* ---------------------------------------------------------
+     RIVELAZIONE COMPLETA
+     Quando la percentuale grattata supera la soglia, il canvas
+     sparisce del tutto con una dissolvenza (bonus UX).
+  --------------------------------------------------------- */
+  function checkRevealProgress() {
+    if (hasRevealed) return;
+
+    moveCount++;
+    if (moveCount % 15 !== 0) return; // throttling per non appesantire la CPU
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const pixels = imageData.data;
+
+    let transparent = 0;
+    let sampled = 0;
+    const step = 40; // campiona un pixel ogni 10 (4 canali x 10) per performance
+
+    for (let i = 3; i < pixels.length; i += step) {
+      sampled++;
+      if (pixels[i] === 0) transparent++;
+    }
+
+    const percentScratched = (transparent / sampled) * 100;
+
+    if (percentScratched >= REVEAL_THRESHOLD) {
+      revealAll();
+    }
+  }
+
+  function revealAll() {
+    hasRevealed = true;
+    canvas.classList.add("is-revealed");
+    canvas.style.pointerEvents = "none";
+
+    // Pulisce del tutto il canvas dopo la dissolvenza CSS
+    window.setTimeout(() => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }, 850);
+  }
+
+  /* ---------------------------------------------------------
+     GESTORI EVENTI (comuni a mouse e touch)
+  --------------------------------------------------------- */
+  function handleStart(event) {
+    if (hasRevealed) return;
+    event.preventDefault();
+    isScratching = true;
+
+    const pos = getPointerPosition(event);
+    lastX = pos.x;
+    lastY = pos.y;
+    scratchAt(pos.x, pos.y);
+  }
+
+  function handleMove(event) {
+    if (!isScratching || hasRevealed) return;
+    event.preventDefault();
+
+    const pos = getPointerPosition(event);
+    scratchLine(lastX, lastY, pos.x, pos.y);
+    lastX = pos.x;
+    lastY = pos.y;
+
+    checkRevealProgress();
+  }
+
+  function handleEnd() {
+    isScratching = false;
+  }
+
+  function debounce(fn, delay) {
+    let timer = null;
+    return function debounced(...args) {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => fn.apply(null, args), delay);
+    };
+  }
+
+  /* ---------------------------------------------------------
+     REGISTRAZIONE EVENTI
+  --------------------------------------------------------- */
+  // --- Mouse (desktop) ---
+  canvas.addEventListener("mousedown", handleStart);
+  canvas.addEventListener("mousemove", handleMove);
+  window.addEventListener("mouseup", handleEnd);
+  canvas.addEventListener("mouseleave", handleEnd);
+
+  // --- Touch (mobile) ---
+  canvas.addEventListener("touchstart", handleStart, { passive: false });
+  canvas.addEventListener("touchmove", handleMove, { passive: false });
+  canvas.addEventListener("touchend", handleEnd, { passive: false });
+  canvas.addEventListener("touchcancel", handleEnd, { passive: false });
+
+  // --- Resize / cambio orientamento ---
+  window.addEventListener("resize", debounce(setupCanvas, 200));
+  window.addEventListener("orientationchange", debounce(setupCanvas, 200));
+
+  /* ---------------------------------------------------------
+     AVVIO
+  --------------------------------------------------------- */
+  setupCanvas();
+
+  /* ---------------------------------------------------------
+     REGISTRAZIONE SERVICE WORKER (percorso relativo!)
+  --------------------------------------------------------- */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then((registration) => {
+          console.log("Service Worker registrato:", registration.scope);
+        })
+        .catch((error) => {
+          console.error("Registrazione Service Worker fallita:", error);
+        });
+    });
+  }
+})();

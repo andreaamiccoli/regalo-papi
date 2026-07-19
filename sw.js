@@ -1,56 +1,105 @@
-const CACHE_NAME = 'regalo-papi-v1.1';
+"use strict";
 
-// L'elenco di tutti i file statici che l'app deve salvare per funzionare offline
+// Incrementa questo valore ad ogni modifica dei file per invalidare la vecchia cache
+const CACHE_NAME = 'regalo-papi-v1.2';
+
+// Percorsi RIGOROSAMENTE relativi (./) per funzionare in una sottocartella
+// del tipo username.github.io/repo/
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './assets/poster.jpg',
-  './assets/icon-192.png',
-  './assets/icon-512.png'
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./manifest.json",
+  "./assets/poster.jpg",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
 ];
 
-// 1. Evento di Installazione: creiamo la cache e salviamo gli asset
-self.addEventListener('install', (event) => {
+/* -----------------------------------------------------------
+   INSTALL
+   Precarica tutti gli asset del progetto e forza l'attivazione
+   immediata del nuovo Service Worker (skipWaiting).
+----------------------------------------------------------- */
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('SW: File messi in cache con successo');
-        return cache.addAll(ASSETS_TO_CACHE);
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      .catch((error) => {
+        console.error("[SW] Errore durante il precaching:", error);
       })
-      .then(() => self.skipWaiting()) // Forza il Service Worker a diventare attivo subito
   );
 });
 
-// 2. Evento di Attivazione: eliminiamo vecchie versioni della cache se presenti
-self.addEventListener('activate', (event) => {
+/* -----------------------------------------------------------
+   ACTIVATE
+   Ripulisce le cache vecchie e prende il controllo immediato
+   di tutte le pagine aperte (clients.claim).
+----------------------------------------------------------- */
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('SW: Rimozione vecchia cache', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Prende il controllo immediato della pagina
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        )
+      )
+      .then(() => self.clients.claim())
   );
 });
 
-// 3. Evento Fetch: intercettiamo le richieste di rete
-self.addEventListener('fetch', (event) => {
+/* -----------------------------------------------------------
+   FETCH — Strategia Cache-First
+   1. Se la risorsa è già in cache, la restituisce subito.
+   2. Altrimenti va in rete, la salva in cache per il futuro
+      e la restituisce.
+   3. In caso di navigazione offline senza cache, fa fallback
+      su ./index.html.
+----------------------------------------------------------- */
+self.addEventListener("fetch", (event) => {
+  // Gestiamo solo richieste GET: POST/PUT ecc. non vanno mai messe in cache.
+  if (event.request.method !== "GET") {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        // Se il file è nella cache, lo restituiamo subito senza usare internet
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        // Altrimenti, lo scarichiamo normalmente dalla rete
-        return fetch(event.request);
-      })
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(event.request)
+        .then((networkResponse) => {
+          // Non mettiamo in cache risposte non valide o di tipo "opaco" (cross-origin)
+          if (
+            !networkResponse ||
+            networkResponse.status !== 200 ||
+            networkResponse.type !== "basic"
+          ) {
+            return networkResponse;
+          }
+
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline e nessuna cache disponibile: se è una navigazione
+          // di pagina, mostriamo comunque l'app shell.
+          if (event.request.mode === "navigate") {
+            return caches.match("./index.html");
+          }
+          return undefined;
+        });
+    })
   );
 });
