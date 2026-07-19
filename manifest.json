@@ -1,0 +1,13 @@
+{
+  "short_name": "OdisseaRegalo",
+  "name": "Un Regalo Per Papi",
+  "icons": [
+    { "src": "assets/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "assets/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0d1117",
+  "theme_color": "#d4af37",
+  "display": "standalone",
+  "orientation": "portrait"
+}
