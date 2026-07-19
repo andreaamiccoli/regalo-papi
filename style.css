@@ -293,4 +293,289 @@ body {
   .poster {
     max-height: 32vh;
   }
+}/* =========================================================
+   RESET & BASE
+   ========================================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;           /* blocca lo scroll del telefono */
+  overscroll-behavior: none;  /* evita il "rimbalzo" su iOS/Android */
+  background-color: #0d1224;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  color: #f5f5f5;
+
+  /* Gradiente scuro epico di sfondo */
+  background: radial-gradient(circle at 50% 20%, #1c2541 0%, #0d1224 55%, #05060d 100%);
+}
+
+/* =========================================================
+   CONTENITORE PRINCIPALE (100% schermo)
+   ========================================================= */
+.card-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* =========================================================
+   SCENA DI FLIP (contenitore con prospettiva 3D)
+   ========================================================= */
+.flip-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1400px;
+}
+
+.flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Applicata via JS quando si scuote il telefono (o si tocca il fallback) */
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-face--back {
+  transform: rotateY(180deg);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   FACCIA POSTERIORE — QR CODE DEI BIGLIETTI
+   (sfondo bianco: i QR forniti sono neri su bianco)
+   ========================================================= */
+.qr-layer {
+  width: 100%;
+  height: 100%;
+  padding: calc(24px + env(safe-area-inset-top)) 20px
+    calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  color: #1a1a1a;
+}
+
+.qr-layer__title {
+  font-size: clamp(1.2rem, 5vw, 1.8rem);
+  font-weight: 800;
+  color: #0d1224;
+}
+
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-card__image {
+  width: min(60vw, 260px);
+  height: min(60vw, 260px);
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.qr-card__label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+  letter-spacing: 0.3px;
+}
+
+.back-hint {
+  margin-top: 6px;
+  border: none;
+  background: rgba(13, 18, 36, 0.06);
+  color: #333;
+  font-size: 0.85rem;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: inherit;
+}
+
+/* =========================================================
+   INVITO A SCUOTERE (mostrato dopo la rivelazione del gratta e vinci)
+   ========================================================= */
+.shake-hint {
+  border: none;
+  font-family: inherit;
+  background: rgba(240, 193, 75, 0.15);
+  border: 1px solid rgba(240, 193, 75, 0.45);
+  color: #f0c14b;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  animation: shake-hint-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes shake-hint-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* =========================================================
+   LIVELLO INFERIORE — IL REGALO
+   ========================================================= */
+.prize-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly; /* distribuisce gli elementi su qualsiasi altezza */
+
+  padding: calc(20px + env(safe-area-inset-top)) 20px
+    calc(20px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.greeting {
+  font-size: clamp(1.4rem, 6vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #f0c14b;
+  text-shadow: 0 2px 18px rgba(240, 193, 75, 0.45);
+}
+
+.poster {
+  max-height: 40vh;
+  max-width: 85vw;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  user-select: none;
+}
+
+/* Box dettagli in stile "glassmorphism" */
+.details {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 18px 22px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.details__title {
+  font-size: clamp(1.1rem, 4.2vw, 1.4rem);
+  color: #fdf3c7;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+}
+
+.details .divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 10px 0;
+}
+
+.details p {
+  font-size: clamp(0.85rem, 3.2vw, 1rem);
+  line-height: 1.65;
+  color: rgba(245, 245, 245, 0.92);
+}
+
+.tickets-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(240, 193, 75, 0.15);
+  border: 1px solid rgba(240, 193, 75, 0.45);
+  color: #f0c14b;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.4px;
+}
+
+/* =========================================================
+   LIVELLO SUPERIORE — CANVAS "GRATTA E VINCI"
+   ========================================================= */
+#scratch-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+
+  touch-action: none;      /* impedisce lo scroll della pagina durante il gratta */
+  cursor: grab;
+  transition: opacity 0.85s ease;
+}
+
+#scratch-canvas:active {
+  cursor: grabbing;
+}
+
+/* Classe applicata via JS quando la percentuale grattata supera la soglia */
+#scratch-canvas.is-revealed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* =========================================================
+   PICCOLI ADATTAMENTI PER SCHERMI MOLTO BASSI (landscape mobile)
+   ========================================================= */
+@media (max-height: 480px) {
+  .greeting {
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+  }
+  .poster {
+    max-height: 32vh;
+  }
 }
