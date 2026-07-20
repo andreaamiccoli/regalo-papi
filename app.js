@@ -48,16 +48,16 @@
   function setupCanvas() {
     const dpr = window.devicePixelRatio || 1;
 
-    // Rileva le dimensioni reali del contenitore genitore
+    // Rileva la dimensione REALE del contenitore padre (100% dello schermo)
     const parent = canvas.parentElement;
     const width = parent ? parent.clientWidth : window.innerWidth;
     const height = parent ? parent.clientHeight : window.innerHeight;
 
-    // Imposta il buffer di rendering in alta definizione (Retina / High-DPI)
+    // Risoluzione bitmap interna del canvas per schermi HD / Retina
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
 
-    // Mantiene lo stile CSS al 100% del contenitore
+    // Forziamo il CSS al 100% invece dei pixel fissi
     canvas.style.width = "100%";
     canvas.style.height = "100%";
 
