@@ -57,6 +57,7 @@ body {
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
   transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
 }
 
 /* Applicata via JS quando si tocca il pulsante per vedere i biglietti */
@@ -71,44 +72,55 @@ body {
   height: 100%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 
-  /* La sola backface-visibility non basta in alcuni motori di rendering
-     (es. WebKit con elementi che hanno backdrop-filter/proprie superfici
-     di composizione, come il box ".details"): la faccia "dietro" può
-     restare dipinta/cliccabile anche se dovrebbe essere invisibile.
-     Per sicurezza nascondiamo esplicitamente la faccia non attiva con
-     "visibility", ritardando il cambio finché l'animazione di rotazione
-     (0.9s) non è terminata, così il capovolgimento resta fluido. */
+  /* Cambio visibilità esattamente a 90° (0.45s su 0.9s totali) sia all'andata che al ritorno */
   visibility: visible;
-  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0s;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0.45s;
 }
 
 .flip-face--front {
-  /* Trasformazione esplicita (anche se "nulla") per forzare l'elemento
-     dentro il contesto 3D del genitore in modo coerente su tutti i browser */
-  transform: rotateY(0deg);
+  transform: rotateY(0deg) translateZ(1px);
 }
 
 .flip-face--back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
   background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  visibility: hidden; /* nascosta finché non si capovolge */
+  visibility: hidden; /* Nascosta di default */
 }
 
+/* Stato ruotato (is-flipped) */
 .flip-card.is-flipped .flip-face--front {
   visibility: hidden;
   pointer-events: none;
-  transition-delay: 0.9s; /* resta "visibile" finché la rotazione non è finita */
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0.45s;
 }
 
 .flip-card.is-flipped .flip-face--back {
   visibility: visible;
   pointer-events: auto;
-  transition-delay: 0s; /* diventa attiva da subito, prima ancora che finisca di ruotare */
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s linear 0.45s;
+}
+
+/* =========================================================
+   LIVELLO SUPERIORE — CANVAS "GRATTA E VINCI"
+   ========================================================= */
+#scratch-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+
+  touch-action: none;
+  cursor: grab;
+  transition: opacity 0.85s ease;
 }
 
 /* =========================================================

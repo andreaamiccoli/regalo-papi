@@ -42,22 +42,26 @@
     };
   }
 
-  /* ---------------------------------------------------------
+/* ---------------------------------------------------------
      INIZIALIZZAZIONE / RESIZE DEL CANVAS
-     Il canvas si adatta dinamicamente alla risoluzione reale
-     del dispositivo (devicePixelRatio) per restare nitido.
   --------------------------------------------------------- */
   function setupCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    const { width, height } = getViewportSize();
 
+    // Rileva le dimensioni reali del contenitore genitore
+    const parent = canvas.parentElement;
+    const width = parent ? parent.clientWidth : window.innerWidth;
+    const height = parent ? parent.clientHeight : window.innerHeight;
+
+    // Imposta il buffer di rendering in alta definizione (Retina / High-DPI)
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
 
-    // Reset della trasformazione ad ogni resize, per evitare che lo scaling
-    // si accumuli chiamando ctx.scale() più volte.
+    // Mantiene lo stile CSS al 100% del contenitore
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+
+    // Reset della trasformazione ad ogni resize
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     hasRevealed = false;
